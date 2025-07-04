@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Locator</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .search-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .search-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .entries-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .entries-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .entry-link {
+            display: block;
+            background: white;
+            color: #495057;
+            text-decoration: none;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .entry-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .entry-link:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #4facfe;
+            color: #4facfe;
+        }
+
+        .entry-link:hover::before {
+            left: 100%;
+        }
+
+        .entry-link::after {
+            content: '📍';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+
+        .no-entries {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📍 Office Locator</h1>
+            <p>Manage and locate your office addresses with ease</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>Add New Office Location</h2>
+                <div class="input-group">
+                    <label for="name">Office Name</label>
+                    <input type="text" id="name" placeholder="Enter office name (e.g., Main Office, Branch Office)">
+                </div>
+                <div class="input-group">
+                    <label for="address">Office Address</label>
+                    <input type="text" id="address" placeholder="Enter complete office address">
+                </div>
+                <button class="btn" id="addBtn" onclick="addEntry()">Add Office Location</button>
+            </div>
+
+            <div class="search-section">
+                <h3>🔍 Search Offices</h3>
+                <input type="text" id="search" placeholder="Search by office name or address..." oninput="filterEntries()">
+            </div>
+
+            <div class="entries-section">
+                <h3>📋 Saved Office Locations</h3>
+                <div id="entries">
+                    <div class="loading">Loading office locations...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration - Replace with your actual config
+        const firebaseConfig = {
+                            apiKey: "AIzaSyDB_78efEwNs41DFSVRDvfjwFTYoJNTy5E",
+                            authDomain: "office-locator-85eaf.firebaseapp.com",
+                            projectId: "office-locator-85eaf",
+                            storageBucket: "office-locator-85eaf.firebasestorage.app",
+                            messagingSenderId: "592623246724",
+                            appId: "1:592623246724:web:3a9543c0bda036affa91d1",
+                            measurementId: "G-QZHJTKNBE9"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let entries = [];
+        let allEntries = [];
+
+        // Load entries from Firestore on page load
+        window.onload = function() {
+            loadEntries();
+        }
+
+        async function loadEntries() {
+            try {
+                const snapshot = await db.collection('offices').orderBy('timestamp', 'desc').get();
+                allEntries = [];
+                snapshot.forEach(doc => {
+                    allEntries.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                entries = [...allEntries];
+                displayEntries(entries);
+            } catch (error) {
+                console.error("Error loading entries:", error);
+                showErrorMessage("Failed to load office locations. Please check your Firebase configuration.");
+            }
+        }
+
+        async function addEntry() {
+            const name = document.getElementById("name").value.trim();
+            const address = document.getElementById("address").value.trim();
+            const addBtn = document.getElementById("addBtn");
+            
+            if (!name || !address) {
+                alert("Please fill both office name and address.");
+                return;
+            }
+
+            // Disable button and show loading
+            addBtn.disabled = true;
+            addBtn.textContent = "Adding...";
+
+            try {
+                const docRef = await db.collection('offices').add({
+                    name: name,
+                    address: address,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Clear form
+                document.getElementById("name").value = "";
+                document.getElementById("address").value = "";
+                document.getElementById("search").value = "";
+
+                // Reload entries
+                await loadEntries();
+
+                // Show success message
+                showSuccessMessage("Office location added successfully!");
+            } catch (error) {
+                console.error("Error adding entry:", error);
+                showErrorMessage("Failed to add office location. Please try again.");
+            } finally {
+                // Re-enable button
+                addBtn.disabled = false;
+                addBtn.textContent = "Add Office Location";
+            }
+        }
+
+        function showSuccessMessage(message) {
+            const successDiv = document.createElement("div");
+            successDiv.className = "success-message";
+            successDiv.textContent = message;
+            
+            const content = document.querySelector(".content");
+            content.insertBefore(successDiv, content.firstChild);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        function showErrorMessage(message) {
+            const errorDiv = document.createElement("div");
+            errorDiv.className = "error-message";
+            errorDiv.textContent = message;
+            
+            const content = document.querySelector(".content");
+            content.insertBefore(errorDiv, content.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function displayEntries(list) {
+            let container = document.getElementById("entries");
+            container.innerHTML = "";
+            
+            if (list.length === 0) {
+                container.innerHTML = '<div class="no-entries">No office locations found. Add your first office location above!</div>';
+                return;
+            }
+            
+            list.forEach((entry, index) => {
+                let link = document.createElement("a");
+                link.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.address)}`;
+                link.target = "_blank";
+                link.className = "entry-link fade-in";
+                link.style.animationDelay = `${index * 0.1}s`;
+                link.innerHTML = `<strong>${entry.name}</strong><br><small>${entry.address}</small>`;
+                container.appendChild(link);
+            });
+        }
+
+        function filterEntries() {
+            const query = document.getElementById("search").value.toLowerCase().trim();
+            if (query === "") {
+                entries = [...allEntries];
+            } else {
+                entries = allEntries.filter(entry =>
+                    entry.name.toLowerCase().includes(query) || 
+                    entry.address.toLowerCase().includes(query)
+                );
+            }
+            displayEntries(entries);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                addEntry();
+            }
+        });
+
+        // Real-time updates (optional - uncomment if you want real-time sync)
+        /*
+        db.collection('offices')
+            .orderBy('timestamp', 'desc')
+            .onSnapshot((snapshot) => {
+                allEntries = [];
+                snapshot.forEach(doc => {
+                    allEntries.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                entries = [...allEntries];
+                displayEntries(entries);
+            });
+        */
+    </script>
+</body>
+</html> 

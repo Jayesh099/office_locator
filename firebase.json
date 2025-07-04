@@ -1,16 +1,26 @@
 {
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    "firestore": {
+      "rules": "firestore.rules"
+    },
+    "hosting": {
+      "target": "new-site",
+      "public": "public",
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; font-src 'self' https://stackpath.bootstrapcdn.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://office-locator-85eaf.firebaseapp.com; style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; frame-src 'self' https://office-locator-85eaf.firebaseapp.com; img-src 'self' data: https:;"
+            }
+          ]
+        }
+      ],
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "cleanUrls": true
+    }
   }
-}

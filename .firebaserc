@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "office-locator-85eaf"
-  }
+  },
+  "targets": {
+    "office-locator-85eaf": {
+      "hosting": {
+        "new-site": [
+          "office-locator-new"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

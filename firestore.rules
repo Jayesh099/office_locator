@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /offices/{officeId} {
+      // Allow public read access for single documents (get) and lists (list)
+      allow get, list: if true;
+
+      // Allow write access (create, update, delete) only for authenticated users
+      allow create, update, delete: if request.auth != null;
+    }
+  }
+} 

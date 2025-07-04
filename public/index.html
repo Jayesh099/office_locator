@@ -1,89 +1,787 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Locator</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/11.9.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/11.9.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Fix for iOS Safari button styling */
+        input[type="text"], .btn {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .search-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .search-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .entries-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .entries-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .entry-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            color: #495057;
+            text-decoration: none;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .entry-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: #4facfe;
+        }
+
+        .entry-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entry-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+
+        .entry-details span {
+            display: block;
+            margin-bottom: 5px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .entry-details span:last-child {
+            margin-bottom: 0;
+        }
+
+        .entry-details i {
+            margin-right: 8px;
+            color: #4facfe;
+            width: 15px;
+            text-align: center;
+        }
+
+        .detail-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .detail-link:hover {
+            color: #4facfe;
+            text-decoration: underline;
+        }
+
+        .entry-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .call-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            background: #1877f2;
+            color: white;
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .call-btn:hover {
+            background: #125db0;
+            transform: scale(1.1);
+        }
+
+        .no-entries {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                margin: 0;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+                position: relative;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+                margin-bottom: 5px;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .auth-buttons {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+            }
+            
+            .auth-btn {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .form-section, .search-section, .entries-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .form-section h2, .search-section h3, .entries-section h3 {
+                font-size: 1.2rem;
+            }
+            
+            input[type="text"], .btn {
+                padding: 12px 15px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .entry-link {
+                padding: 15px;
+                margin: 10px 0;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .entry-actions {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+            
+            .delete-btn {
+                opacity: 1;
+                transform: scale(1);
+                position: static;
+                margin-left: 0;
+                margin-top: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .form-section, .search-section, .entries-section {
+                padding: 15px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .auth-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        #authIcon {
+            height: 24px;
+            width: 24px;
+            vertical-align: middle;
+            font-size: 24px; /* For Font Awesome */
+            color: white;
+        }
+
+        .delete-btn {
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            transform: scale(0.8);
+            margin-left: 10px;
+        }
+
+        .entry-link:hover .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .delete-btn:hover {
+            background: #d63234;
+            transform: scale(1.1);
+        }
     </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="auth-buttons">
+                <a href="#" id="authLink" class="auth-btn">
+                    <i id="authIcon" class="fa"></i>
+                </a>
+            </div>
+            <h1>📍 Office Locator</h1>
+            <p>Manage and locate your office addresses with ease</p>
+        </div>
+
+        <div class="content">
+            <div id="admin-controls" class="form-section" style="display: none;">
+                <h2>Add New Office Location</h2>
+                <div class="input-group">
+                    <label for="name">Office Name</label>
+                    <input type="text" id="name" placeholder="Enter office name (e.g., Main Office, Branch Office)">
+                </div>
+                <div class="input-group">
+                    <label for="address">Office Address</label>
+                    <input type="text" id="address" placeholder="Enter complete office address">
+                </div>
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" placeholder="Enter phone number">
+                </div>
+                <button class="btn" id="addBtn" onclick="addEntry()">Add Office Location</button>
+            </div>
+
+            <div class="search-section">
+                <h3>🔍 Search Offices</h3>
+                <input type="text" id="search" placeholder="Search by office name or address..." oninput="filterEntries()">
+            </div>
+
+            <div class="entries-section">
+                <h3>📋 Saved Office Locations</h3>
+                <div id="entries">
+                    <div class="loading">Loading office locations...</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+        // Firebase configuration - Replace with your actual config
+        const firebaseConfig = {
+                            apiKey: "AIzaSyDB_78efEwNs41DFSVRDvfjwFTYoJNTy5E",
+                            authDomain: "office-locator-85eaf.firebaseapp.com",
+                            projectId: "office-locator-85eaf",
+                            storageBucket: "office-locator-85eaf.firebasestorage.app",
+                            messagingSenderId: "592623246724",
+                            appId: "1:592623246724:web:3a9543c0bda036affa91d1",
+                            measurementId: "G-QZHJTKNBE9"
+        };
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let entries = [];
+        let allEntries = [];
+        let currentUser = null;
+
+        // Auth state listener
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            const adminControls = document.getElementById('admin-controls');
+            const authLink = document.getElementById('authLink');
+            const authIcon = document.getElementById('authIcon');
+            
+            if (user) {
+                // User is logged in
+                adminControls.style.display = 'block';
+                authLink.href = '#';
+                authIcon.className = 'fa fa-power-off';
+                authLink.onclick = () => auth.signOut();
+            } else {
+                // User is logged out
+                adminControls.style.display = 'none';
+                authLink.href = 'login.html';
+                authIcon.className = 'fa fa-sign-in';
+                authLink.onclick = null;
+            }
+            // Re-render entries to update UI based on auth state (e.g., show/hide delete buttons)
+            filterEntries();
+        });
+
+        // The loadEntries function is no longer needed, onSnapshot will handle everything.
+
+        function addEntry() {
+            const name = document.getElementById("name").value.trim();
+            const address = document.getElementById("address").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const addBtn = document.getElementById("addBtn");
+            
+            if (!name || !address || !phone) {
+                alert("Please fill all fields: office name, address, and phone number.");
+                return;
+            }
+
+            // More robust phone number validation
+            if (!/^[0-9]+$/.test(phone) || phone.length < 10 || phone.length > 15) {
+                alert("Please enter a valid phone number containing 10 to 15 digits.");
+                return;
+            }
+
+            // Disable button and show loading
+            addBtn.disabled = true;
+            addBtn.textContent = "Adding...";
+
+            db.collection('offices').add({
+                name: name,
+                address: address,
+                phone: phone,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // Success
+                document.getElementById("name").value = "";
+                document.getElementById("address").value = "";
+                document.getElementById("phone").value = "";
+                document.getElementById("search").value = "";
+                showSuccessMessage("Office location added successfully!");
+                
+                // Re-enable button
+                addBtn.disabled = false;
+                addBtn.textContent = "Add Office Location";
+            })
+            .catch((error) => {
+                // Failure
+                console.error("Error adding entry:", error);
+                showErrorMessage("Failed to add office location. Please try again.");
+                
+                // Re-enable button
+                addBtn.disabled = false;
+                addBtn.textContent = "Add Office Location";
+            });
         }
-      });
+
+        function showSuccessMessage(message) {
+            const successDiv = document.createElement("div");
+            successDiv.className = "success-message";
+            successDiv.textContent = message;
+            
+            const content = document.querySelector(".content");
+            content.insertBefore(successDiv, content.firstChild);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        function showErrorMessage(message) {
+            const errorDiv = document.createElement("div");
+            errorDiv.className = "error-message";
+            errorDiv.textContent = message;
+            
+            const content = document.querySelector(".content");
+            content.insertBefore(errorDiv, content.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function displayEntries(list) {
+            let container = document.getElementById("entries");
+            container.innerHTML = "";
+            
+            if (list.length === 0) {
+                container.innerHTML = '<div class="no-entries">No office locations found. Add your first office location above!</div>';
+                return;
+            }
+            
+            list.forEach((entry, index) => {
+                const entryCard = document.createElement("div");
+                entryCard.className = "entry-link fade-in";
+                entryCard.style.animationDelay = `${index * 0.1}s`;
+                
+                const entryInfo = document.createElement('div');
+                entryInfo.className = 'entry-info';
+                entryInfo.innerHTML = `
+                    <div class="entry-name">${entry.name}</div>
+                    <div class="entry-details">
+                        <span>
+                            <i class="fa fa-map-marker"></i>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.address)}" target="_blank" class="detail-link">${entry.address}</a>
+                        </span>
+                        <span>
+                            <i class="fa fa-phone"></i>
+                            <a href="tel:${entry.phone}" class="detail-link">${entry.phone}</a>
+                        </span>
+                    </div>
+                `;
+                entryCard.appendChild(entryInfo);
+
+                const actionsContainer = document.createElement('div');
+                actionsContainer.className = 'entry-actions';
+
+                const callBtn = document.createElement('a');
+                callBtn.className = 'call-btn';
+                callBtn.href = `tel:${entry.phone}`;
+                callBtn.title = 'Call Office';
+                callBtn.innerHTML = '<i class="fa fa-phone"></i>';
+                actionsContainer.appendChild(callBtn);
+
+                if (currentUser) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                    deleteBtn.title = 'Delete';
+                    deleteBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        deleteEntry(entry.id, entry.name);
+                    };
+                    actionsContainer.appendChild(deleteBtn);
+                }
+
+                entryCard.appendChild(actionsContainer);
+                container.appendChild(entryCard);
+            });
+        }
+
+        async function deleteEntry(id, name) {
+            if (!currentUser) {
+                showErrorMessage("You must be logged in to delete entries.");
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete the office "${name}"?`)) {
+                try {
+                    await db.collection('offices').doc(id).delete();
+                    showSuccessMessage(`Successfully deleted "${name}".`);
+                    // No need to call loadEntries(), onSnapshot will handle it.
+                } catch (error) {
+                    console.error("Error deleting entry: ", error);
+                    showErrorMessage("Failed to delete office location.");
+                }
+            }
+        }
+
+        function filterEntries() {
+            const query = document.getElementById("search").value.toLowerCase().trim();
+            if (query === "") {
+                entries = [...allEntries];
+            } else {
+                entries = allEntries.filter(entry =>
+                    entry.name.toLowerCase().includes(query) || 
+                    entry.address.toLowerCase().includes(query) ||
+                    (entry.phone && entry.phone.toLowerCase().includes(query))
+                );
+            }
+            displayEntries(entries);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                addEntry();
+            }
+        });
+
+        // Real-time updates with onSnapshot
+        db.collection('offices')
+            .orderBy('timestamp', 'desc')
+            .onSnapshot((snapshot) => {
+                allEntries = [];
+                snapshot.forEach(doc => {
+                    allEntries.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                // After updating allEntries, apply current search filter
+                filterEntries();
+            }, (error) => {
+                 console.error("Error with real-time listener:", error);
+                 const entriesContainer = document.getElementById("entries");
+                 entriesContainer.innerHTML = `
+                    <div class="no-entries" style="color: #dc3545; text-align: center; padding: 20px;">
+                        <strong>⚠️ Connection Error</strong><br>
+                        Could not load office locations.<br>
+                        Please check your internet connection and try refreshing the page.<br>
+                        <button onclick="window.location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Refresh Page
+                        </button>
+                    </div>`;
+            });
+            
+        // Add online/offline detection
+        window.addEventListener('online', () => {
+            showSuccessMessage('Connection restored! 🌐');
+        });
+        
+        window.addEventListener('offline', () => {
+            showErrorMessage('You are offline. Some features may not work properly. 📶');
+        });
     </script>
-  </body>
-</html>
+</body>
+</html> 
