@@ -794,6 +794,17 @@
                 </div>
             </div>
             
+            <div class="form-group floating">
+                <input type="tel" id="officePhone2" placeholder=" ">
+                <label for="officePhone2">Phone Number 2 (Optional)</label>
+                <div class="input-highlight"></div>
+                <div class="field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 16.92V19.92A2 2 0 0 1 20.02 22A19.79 19.79 0 0 1 8.63 17.35A19.5 19.5 0 0 1 2 5.98A2 2 0 0 1 4.08 4H7.08A2 2 0 0 1 9.08 5.5L10.26 8.5A2 2 0 0 1 9.81 10.91L8.09 12.64A16 16 0 0 0 15.36 19.91L17.09 18.19A2 2 0 0 1 19.5 17.74L22.5 18.92A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            
             <div class="button-group">
                 <button type="submit" class="btn primary" id="updateBtn">
                     <span class="btn-text">Update Office</span>
@@ -850,12 +861,14 @@
             const address = urlParams.get('address');
             const location = urlParams.get('location');
             const phone = urlParams.get('phone');
+            const phone2 = urlParams.get('phone2');
             
             if (officeId && name && phone) {
                 document.getElementById('officeName').value = decodeURIComponent(name);
                 document.getElementById('officeAddress').value = address ? decodeURIComponent(address) : '';
                 document.getElementById('officeLocation').value = location ? decodeURIComponent(location) : '';
                 document.getElementById('officePhone').value = decodeURIComponent(phone);
+                document.getElementById('officePhone2').value = phone2 ? decodeURIComponent(phone2) : '';
                 showStatus('✅ Office data loaded successfully', 'success');
                 return true;
             } else {
@@ -881,9 +894,16 @@
             const address = document.getElementById('officeAddress').value.trim();
             const location = document.getElementById('officeLocation').value.trim();
             const phone = document.getElementById('officePhone').value.trim();
+            const phone2 = document.getElementById('officePhone2').value.trim();
             
             if (!name || !address || !location || !phone) {
-                showStatus('❌ Please fill all fields', 'error');
+                showStatus('❌ Please fill all required fields', 'error');
+                return;
+            }
+            
+            // Validate phone2 if provided
+            if (phone2 && (!/^[0-9]+$/.test(phone2) || phone2.length < 10 || phone2.length > 15)) {
+                showStatus('❌ Please enter a valid second phone number (10-15 digits)', 'error');
                 return;
             }
             
@@ -896,12 +916,22 @@
                 // Get document reference and update
                 const docRef = db.collection('offices').doc(officeId);
                 
-                await docRef.set({
+                const updateData = {
                     name: name,
                     address: address,
                     location: location,
                     phone: phone
-                }, { merge: true });
+                };
+                
+                // Add phone2 only if provided
+                if (phone2) {
+                    updateData.phone2 = phone2;
+                } else {
+                    // Remove phone2 if it was previously set but now empty
+                    updateData.phone2 = firebase.firestore.FieldValue.delete();
+                }
+                
+                await docRef.set(updateData, { merge: true });
                 
                 // Show success animation
                 updateBtn.classList.remove('loading');

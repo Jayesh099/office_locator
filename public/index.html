@@ -1203,17 +1203,21 @@
                     <div class="entry-name">${entry.name}</div>
                     <div class="entry-details">
                         <span>
-                            <i class="fa fa-home"></i>
                             <span class="detail-link">${entry.address || 'N/A'}</span>
+                            <i class="fa fa-home"></i>
                         </span>
                         <span>
-                            <i class="fa fa-map-marker"></i>
                             <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.location || entry.address || '')}" target="_blank" class="detail-link">${entry.location || entry.address || 'N/A'}</a>
+                            <i class="fa fa-map-marker"></i>
                         </span>
                         <span>
-                            <i class="fa fa-phone"></i>
                             <a href="tel:${entry.phone}" class="detail-link">${entry.phone}</a>
+                            <i class="fa fa-phone"></i>
                         </span>
+                        ${entry.phone2 ? `<span>
+                            <a href="tel:${entry.phone2}" class="detail-link">${entry.phone2}</a>
+                            <i class="fa fa-phone"></i>
+                        </span>` : ''}
                     </div>
                 `;
                 entryCard.appendChild(entryInfo);
@@ -1271,7 +1275,13 @@
             
             try {
                 // Navigate to edit page with URL parameters
-                const editUrl = `edit.html?id=${encodeURIComponent(entry.id)}&name=${encodeURIComponent(entry.name)}&address=${encodeURIComponent(entry.address || '')}&location=${encodeURIComponent(entry.location || entry.address || '')}&phone=${encodeURIComponent(entry.phone)}`;
+                let editUrl = `edit.html?id=${encodeURIComponent(entry.id)}&name=${encodeURIComponent(entry.name)}&address=${encodeURIComponent(entry.address || '')}&location=${encodeURIComponent(entry.location || entry.address || '')}&phone=${encodeURIComponent(entry.phone)}`;
+                
+                // Add phone2 if it exists
+                if (entry.phone2) {
+                    editUrl += `&phone2=${encodeURIComponent(entry.phone2)}`;
+                }
+                
                 window.location.href = editUrl;
             } catch (error) {
                 console.error('Error navigating to edit page:', error);
@@ -1305,7 +1315,8 @@
                     entry.name.toLowerCase().includes(query) || 
                     (entry.address && entry.address.toLowerCase().includes(query)) ||
                     (entry.location && entry.location.toLowerCase().includes(query)) ||
-                    (entry.phone && entry.phone.toLowerCase().includes(query))
+                    (entry.phone && entry.phone.toLowerCase().includes(query)) ||
+                    (entry.phone2 && entry.phone2.toLowerCase().includes(query))
                 );
             }
             displayEntries(entries);

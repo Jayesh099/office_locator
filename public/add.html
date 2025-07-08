@@ -774,6 +774,14 @@
                     </div>
                     <div class="input-progress" id="phoneProgress"></div>
                 </div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="input-icon fa fa-phone"></i>
+                        <input type="tel" id="phone2" placeholder=" " pattern="[0-9]*" inputmode="numeric">
+                        <label class="floating-label">Phone Number 2 (Optional)</label>
+                    </div>
+                    <div class="input-progress" id="phone2Progress"></div>
+                </div>
                 <button class="btn" id="addBtn" onclick="addEntry()">
                     <span class="btn-text">Add Office Location</span>
                     <span class="btn-loader" style="display: none;">
@@ -806,6 +814,7 @@
             const address = document.getElementById("address").value.trim();
             const location = document.getElementById("location").value.trim();
             const phone = document.getElementById("phone").value.trim();
+            const phone2 = document.getElementById("phone2").value.trim();
             
             let progress = 0;
             let filledFields = 0;
@@ -840,7 +849,14 @@
                 document.getElementById("phoneProgress").style.width = "0%";
             }
             
-            // Update overall progress
+            if (phone2.length > 0) {
+                const isValidPhone2 = /^[0-9]+$/.test(phone2) && phone2.length >= 10 && phone2.length <= 15;
+                document.getElementById("phone2Progress").style.width = isValidPhone2 ? "100%" : "50%";
+            } else {
+                document.getElementById("phone2Progress").style.width = "0%";
+            }
+            
+            // Update overall progress - required fields: 4, optional phone2: 1
             progress = (filledFields / 4) * 100;
             document.getElementById("progressBar").style.width = progress + "%";
         }
@@ -850,6 +866,7 @@
             const address = document.getElementById("address").value.trim();
             const location = document.getElementById("location").value.trim();
             const phone = document.getElementById("phone").value.trim();
+            const phone2 = document.getElementById("phone2").value.trim();
             const addBtn = document.getElementById("addBtn");
             
             if (!name || !address || !location || !phone) {
@@ -859,7 +876,7 @@
                 if (!location) shakeInput("location");
                 if (!phone) shakeInput("phone");
                 
-                showErrorMessage("Please fill all fields: office name, address, location, and phone number.");
+                showErrorMessage("Please fill all required fields: office name, address, location, and phone number.");
                 return;
             }
 
@@ -870,17 +887,31 @@
                 return;
             }
 
+            // Validate phone2 if provided
+            if (phone2 && (!/^[0-9]+$/.test(phone2) || phone2.length < 10 || phone2.length > 15)) {
+                shakeInput("phone2");
+                showErrorMessage("Please enter a valid second phone number containing 10 to 15 digits.");
+                return;
+            }
+
             // Show loading state
             addBtn.classList.add("loading");
             addBtn.disabled = true;
 
-            db.collection('offices').add({
+            const officeData = {
                 name: name,
                 address: address,
                 location: location,
                 phone: phone,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            })
+            };
+
+            // Add phone2 only if it's provided
+            if (phone2) {
+                officeData.phone2 = phone2;
+            }
+
+            db.collection('offices').add(officeData)
             .then(() => {
                 // Success animation
                 addBtn.classList.remove("loading");
@@ -921,7 +952,7 @@
         }
 
         function clearFormWithAnimation() {
-            const inputs = ["name", "address", "location", "phone"];
+            const inputs = ["name", "address", "location", "phone", "phone2"];
             inputs.forEach((id, index) => {
                 setTimeout(() => {
                     const input = document.getElementById(id);
@@ -987,29 +1018,32 @@
                 });
             });
             
-            // Special handling for phone number input
+            // Special handling for phone number inputs
             const phoneInput = document.getElementById('phone');
+            const phone2Input = document.getElementById('phone2');
             
-            // Prevent non-numeric input
-            phoneInput.addEventListener('keypress', function(e) {
-                // Allow only numbers, backspace, delete, tab, escape, enter
-                if (!/[0-9]/.test(e.key) && 
-                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                    e.preventDefault();
-                }
-            });
-            
-            // Remove any non-numeric characters on paste or input
-            phoneInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[^0-9]/g, '');
+            [phoneInput, phone2Input].forEach(input => {
+                // Prevent non-numeric input
+                input.addEventListener('keypress', function(e) {
+                    // Allow only numbers, backspace, delete, tab, escape, enter
+                    if (!/[0-9]/.test(e.key) && 
+                        !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
                 
-                // Limit to 15 digits
-                if (value.length > 15) {
-                    value = value.slice(0, 15);
-                }
-                
-                e.target.value = value;
-                updateProgress();
+                // Remove any non-numeric characters on paste or input
+                input.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/[^0-9]/g, '');
+                    
+                    // Limit to 15 digits
+                    if (value.length > 15) {
+                        value = value.slice(0, 15);
+                    }
+                    
+                    e.target.value = value;
+                    updateProgress();
+                });
             });
             
             // Initialize progress
@@ -1043,6 +1077,9 @@
                     isValid = value.length >= 10;
                     break;
                 case 'phone':
+                    isValid = /^[0-9]+$/.test(value) && value.length >= 10 && value.length <= 15;
+                    break;
+                case 'phone2':
                     isValid = /^[0-9]+$/.test(value) && value.length >= 10 && value.length <= 15;
                     break;
             }
