@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working Edit</title>
+    
+    <!-- Firebase v8 SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #667eea 50%, #764ba2 75%, #f093fb 100%);
+            background-size: 300% 300%;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            animation: gradientFlow 20s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 107, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 159, 243, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 60% 60%, rgba(255, 206, 84, 0.3) 0%, transparent 50%);
+            z-index: -1;
+            animation: floatingOrbs 25s ease-in-out infinite;
+        }
+
+        @keyframes floatingOrbs {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.8;
+            }
+            25% { 
+                transform: translateY(-20px) rotate(90deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(0px) rotate(180deg);
+                opacity: 0.6;
+            }
+            75% { 
+                transform: translateY(20px) rotate(270deg);
+                opacity: 1;
+            }
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%),
+                linear-gradient(-45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%);
+            z-index: -1;
+            animation: meshPattern 30s linear infinite;
+        }
+
+        @keyframes meshPattern {
+            0% { transform: translateX(-100px) translateY(-100px); }
+            100% { transform: translateX(100px) translateY(100px); }
+        }
+        
+        .container {
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.25) 0%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(30px) saturate(180%);
+            padding: 60px;
+            border-radius: 40px;
+            box-shadow: 
+                0 35px 70px rgba(0,0,0,0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            animation: containerEntrance 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                rgba(255, 107, 107, 0.3) 0%, 
+                rgba(78, 205, 196, 0.3) 25%, 
+                rgba(255, 159, 243, 0.3) 50%, 
+                rgba(255, 206, 84, 0.3) 75%, 
+                rgba(255, 107, 107, 0.3) 100%);
+            border-radius: 42px;
+            z-index: -1;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent);
+            animation: containerShine 6s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes containerEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+                filter: blur(10px);
+            }
+            50% {
+                opacity: 0.7;
+                transform: translateY(20px) scale(0.95);
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes containerShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: headerFadeIn 1s ease-out 0.3s both;
+        }
+
+        .icon-wrapper {
+            margin-bottom: 20px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        .edit-icon {
+            display: inline-flex;
+            padding: 25px;
+            background: linear-gradient(135deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #ffeaa7 100%);
+            background-size: 300% 300%;
+            border-radius: 50%;
+            color: white;
+            box-shadow: 
+                0 15px 40px rgba(255, 107, 107, 0.4),
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            animation: iconPulse 3s ease-in-out infinite, iconGradient 8s ease infinite;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes iconGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 15px 40px rgba(255, 107, 107, 0.4),
+                    0 5px 15px rgba(0, 0, 0, 0.2),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 
+                    0 25px 60px rgba(255, 107, 107, 0.6),
+                    0 10px 25px rgba(0, 0, 0, 0.3),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #ffeaa7 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            animation: textGradient 8s ease infinite;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+        }
+
+        @keyframes textGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        @keyframes headerFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modern-form {
+            animation: formSlideIn 0.8s ease-out 0.5s both;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 35px;
+            animation: fieldFadeIn 0.6s ease-out both;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.6s; }
+        .form-group:nth-child(2) { animation-delay: 0.7s; }
+        .form-group:nth-child(3) { animation-delay: 0.8s; }
+
+        .form-group.floating {
+            position: relative;
+        }
+
+        .form-group.floating input {
+            width: 100%;
+            padding: 22px 65px 22px 22px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 16px;
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.1) 100%);
+            box-sizing: border-box;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group.floating label {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            background: transparent;
+            z-index: 1;
+        }
+
+        .form-group.floating input:focus + label,
+        .form-group.floating input:not(:placeholder-shown) + label {
+            top: -12px;
+            left: 18px;
+            font-size: 12px;
+            color: #ff6b6b;
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(255, 255, 255, 0.7) 100%);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group.floating input:focus {
+            outline: none;
+            border-color: rgba(255, 107, 107, 0.8);
+            box-shadow: 
+                0 0 0 4px rgba(255, 107, 107, 0.2),
+                0 15px 35px rgba(255, 107, 107, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            background: linear-gradient(145deg, 
+                rgba(255, 255, 255, 0.5) 0%, 
+                rgba(255, 255, 255, 0.3) 100%);
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .form-group.floating input:hover {
+            border-color: rgba(255, 107, 107, 0.4);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .input-highlight {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(135deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #ffeaa7 100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-50%);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .form-group.floating input:focus ~ .input-highlight {
+            width: 100%;
+            box-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
+        }
+
+        .field-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-group.floating input:focus ~ .field-icon {
+            color: #ff6b6b;
+            transform: translateY(-50%) scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.5));
+        }
+
+        @keyframes formSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fieldFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .button-group {
+            margin-top: 50px;
+            animation: buttonFadeIn 0.8s ease-out 0.9s both;
+            position: relative;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #ffeaa7 100%);
+            background-size: 300% 300%;
+            color: white;
+            padding: 22px 50px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 15px 35px rgba(255, 107, 107, 0.3),
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: buttonGradient 8s ease infinite;
+        }
+
+        @keyframes buttonGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(255, 255, 255, 0.5) 50%, 
+                transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.8s ease;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.2) 0%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 23px;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .btn:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: 
+                0 25px 50px rgba(255, 107, 107, 0.4),
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            animation-duration: 3s;
+        }
+
+        .btn:active {
+            transform: translateY(-3px) scale(1.02);
+            transition: all 0.1s ease;
+        }
+
+        .btn-text {
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-success {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0;
+        }
+
+        .btn.loading .btn-loader {
+            opacity: 1;
+        }
+
+        .btn.success .btn-text {
+            opacity: 0;
+        }
+
+        .btn.success .btn-success {
+            opacity: 1;
+        }
+
+        .loader-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loader-dots div {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+            animation: dotPulse 1.4s ease-in-out infinite both;
+        }
+
+        .loader-dots div:nth-child(1) { animation-delay: -0.32s; }
+        .loader-dots div:nth-child(2) { animation-delay: -0.16s; }
+        .loader-dots div:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes buttonFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled::before {
+            display: none;
+        }
+        
+        .status {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            animation: statusSlide 0.4s ease-out;
+            border: none;
+        }
+
+        @keyframes statusSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .success {
+            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
+            color: #155724;
+            box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
+        }
+        
+        .error {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+        }
+        
+        .loading {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            margin-bottom: 20px;
+            width: auto;
+            padding: 12px 24px;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 30px 20px;
+                border-radius: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            input {
+                padding: 12px 15px;
+            }
+
+            .btn {
+                padding: 15px 20px;
+                font-size: 14px;
+            }
+        }
+
+        /* Enhanced responsive design */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 15px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .form-group.floating input {
+                padding: 18px 50px 18px 18px;
+            }
+            
+            .btn {
+                padding: 18px 30px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="btn back-btn" onclick="window.location.href='index.html'">← Back to Main</button>
+        
+        <div class="header">
+            <div class="icon-wrapper">
+                <div class="edit-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 20H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.5 3.5A2.121 2.121 0 0 1 19 6L7 18L3 19L4 15L16.5 3.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <h1>Edit Office</h1>
+            <p class="subtitle">Update your office information</p>
+        </div>
+        
+        <div id="status"></div>
+        
+        <form id="editForm" class="modern-form">
+            <div class="form-group floating">
+                <input type="text" id="officeName" required placeholder=" ">
+                <label for="officeName">Office Name</label>
+                <div class="input-highlight"></div>
+                <div class="field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 21V5A2 2 0 0 0 17 3H7A2 2 0 0 0 5 5V21L12 17L19 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="form-group floating">
+                <input type="text" id="officeAddress" required placeholder=" ">
+                <label for="officeAddress">Address</label>
+                <div class="input-highlight"></div>
+                <div class="field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 9L12 2L21 9V20A2 2 0 0 1 19 22H5A2 2 0 0 1 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="form-group floating">
+                <input type="text" id="officeLocation" required placeholder=" ">
+                <label for="officeLocation">Location</label>
+                <div class="input-highlight"></div>
+                <div class="field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 10C21 17 12 23 12 23S3 17 3 10A9 9 0 0 1 12 1A9 9 0 0 1 21 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="form-group floating">
+                <input type="tel" id="officePhone" required placeholder=" ">
+                <label for="officePhone">Phone Number</label>
+                <div class="input-highlight"></div>
+                <div class="field-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 16.92V19.92A2 2 0 0 1 20.02 22A19.79 19.79 0 0 1 8.63 17.35A19.5 19.5 0 0 1 2 5.98A2 2 0 0 1 4.08 4H7.08A2 2 0 0 1 9.08 5.5L10.26 8.5A2 2 0 0 1 9.81 10.91L8.09 12.64A16 16 0 0 0 15.36 19.91L17.09 18.19A2 2 0 0 1 19.5 17.74L22.5 18.92A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn primary" id="updateBtn">
+                    <span class="btn-text">Update Office</span>
+                    <div class="btn-loader">
+                        <div class="loader-dots">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                    <div class="btn-success">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let officeId = null;
+        let db = null;
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = 'status ' + type;
+        }
+        
+        // Initialize Firebase
+        function initFirebase() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDB_78efEwNs41DFSVRDvfjwFTYoJNTy5E",
+                authDomain: "office-locator-85eaf.firebaseapp.com",
+                projectId: "office-locator-85eaf",
+                storageBucket: "office-locator-85eaf.firebasestorage.app",
+                messagingSenderId: "592623246724",
+                appId: "1:592623246724:web:3a9543c0bda036affa91d1",
+                measurementId: "G-QZHJTKNBE9"
+            };
+            
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            
+            return true;
+        }
+        
+        // Load office data
+        function loadOfficeData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            officeId = urlParams.get('id');
+            const name = urlParams.get('name');
+            const address = urlParams.get('address');
+            const location = urlParams.get('location');
+            const phone = urlParams.get('phone');
+            
+            if (officeId && name && phone) {
+                document.getElementById('officeName').value = decodeURIComponent(name);
+                document.getElementById('officeAddress').value = address ? decodeURIComponent(address) : '';
+                document.getElementById('officeLocation').value = location ? decodeURIComponent(location) : '';
+                document.getElementById('officePhone').value = decodeURIComponent(phone);
+                showStatus('✅ Office data loaded successfully', 'success');
+                return true;
+            } else {
+                showStatus('❌ Error: No office data found in URL', 'error');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+                return false;
+            }
+        }
+        
+        // Update office
+        async function updateOffice(event) {
+            event.preventDefault();
+            
+            if (!officeId) {
+                showStatus('❌ Error: No office ID found', 'error');
+                return;
+            }
+            
+            const updateBtn = document.getElementById('updateBtn');
+            const name = document.getElementById('officeName').value.trim();
+            const address = document.getElementById('officeAddress').value.trim();
+            const location = document.getElementById('officeLocation').value.trim();
+            const phone = document.getElementById('officePhone').value.trim();
+            
+            if (!name || !address || !location || !phone) {
+                showStatus('❌ Please fill all fields', 'error');
+                return;
+            }
+            
+            // Disable button and show loading
+            updateBtn.disabled = true;
+            updateBtn.classList.add('loading');
+            showStatus('🔄 Updating office...', 'loading');
+            
+            try {
+                // Get document reference and update
+                const docRef = db.collection('offices').doc(officeId);
+                
+                await docRef.set({
+                    name: name,
+                    address: address,
+                    location: location,
+                    phone: phone
+                }, { merge: true });
+                
+                // Show success animation
+                updateBtn.classList.remove('loading');
+                updateBtn.classList.add('success');
+                showStatus('✅ Office updated successfully!', 'success');
+                
+                // Redirect after success
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2500);
+                
+            } catch (error) {
+                showStatus('❌ Update failed: ' + error.message, 'error');
+                
+                // Re-enable button
+                updateBtn.disabled = false;
+                updateBtn.classList.remove('loading');
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (initFirebase()) {
+                loadOfficeData();
+            } else {
+                showStatus('❌ Failed to initialize Firebase', 'error');
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('editForm').addEventListener('submit', updateOffice);
+    </script>
+</body>
+</html> 

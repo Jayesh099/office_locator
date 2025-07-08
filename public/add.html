@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Add Office - Office Locator</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 
+                        0 0 0 1px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            animation: slideIn 0.8s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #667eea 100%);
+            background-size: 400% 400%;
+            color: white;
+            padding: 60px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: rotate 15s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            letter-spacing: -2px;
+            background: linear-gradient(45deg, #ffffff, #f0f0f0, #ffffff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header h1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            animation: shine 4s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 0.95;
+                transform: translateY(0);
+            }
+        }
+
+        .header-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: floatShapes 20s linear infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 60px;
+            height: 60px;
+            top: 25%;
+            left: 15%;
+            animation-delay: -3s;
+        }
+
+        .shape:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 70%;
+            left: 75%;
+            animation-delay: -10s;
+        }
+
+        .shape:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 15%;
+            left: 70%;
+            animation-delay: -7s;
+        }
+
+        @keyframes floatShapes {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.1;
+            }
+            50% {
+                transform: translateY(-30px) rotate(180deg);
+                opacity: 0.3;
+            }
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 16px;
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            z-index: 2;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                        0 0 0 1px rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: formSlideIn 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes formSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #764ba2 75%, #667eea 100%);
+            background-size: 200% 100%;
+            animation: gradientMove 3s ease-in-out infinite;
+            border-radius: 25px 25px 0 0;
+        }
+
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .form-section::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.03) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+            pointer-events: none;
+        }
+
+        .form-section h2 {
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .form-section h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .form-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 10px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmerProgress 2s infinite;
+        }
+
+        @keyframes shimmerProgress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 18px;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 55px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 16px;
+            font-weight: 500;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 0 8px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 20px 24px 20px 55px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        input[type="text"]:focus, input[type="tel"]:focus,
+        input[type="text"]:not(:placeholder-shown), input[type="tel"]:not(:placeholder-shown) {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15),
+                        0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-4px);
+            background: #ffffff;
+        }
+
+        input[type="text"]:focus + .floating-label, input[type="tel"]:focus + .floating-label,
+        input[type="text"]:not(:placeholder-shown) + .floating-label, input[type="tel"]:not(:placeholder-shown) + .floating-label {
+            top: -8px;
+            left: 15px;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="text"]:focus ~ .input-icon, input[type="tel"]:focus ~ .input-icon {
+            color: #667eea;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        input[type="text"]:hover:not(:focus), input[type="tel"]:hover:not(:focus) {
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-group::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .input-group:focus-within::before {
+            transform: scaleX(1);
+        }
+
+        .input-progress {
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 1px;
+            transition: width 0.3s ease;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 50%, #ec4899 100%);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-text {
+            transition: all 0.3s ease;
+        }
+
+        .btn-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .btn.loading .btn-loader {
+            display: inline-block !important;
+        }
+
+        .btn.loading {
+            pointer-events: none;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            animation: successPulse 0.6s ease-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .form-validation {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .form-validation.valid {
+            color: #28a745;
+            opacity: 1;
+        }
+
+        .form-validation.invalid {
+            color: #dc3545;
+            opacity: 1;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05rem;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05rem;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                margin: 0;
+                border-radius: 20px;
+                max-width: 100%;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+            
+            .header {
+                padding: 50px 25px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+            
+            .header p {
+                margin-bottom: 25px;
+            }
+            
+            .form-section {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                margin-bottom: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+            
+            input[type="text"], input[type="tel"], .btn {
+                padding: 16px 20px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-decorations">
+                <div class="floating-shapes">
+                    <div class="shape"></div>
+                    <div class="shape"></div>
+                    <div class="shape"></div>
+                </div>
+            </div>
+            <a href="index.html" class="back-btn">
+                <i class="fa fa-arrow-left"></i>
+            </a>
+            <div class="header-content">
+                <h1>➕ Add Office</h1>
+                <p>Add a new office location to your directory</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>New Office Location</h2>
+                <div class="form-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="input-icon fa fa-building"></i>
+                        <input type="text" id="name" placeholder=" " required>
+                        <label class="floating-label">Office Name</label>
+                    </div>
+                    <div class="input-progress" id="nameProgress"></div>
+                </div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="input-icon fa fa-home"></i>
+                        <input type="text" id="address" placeholder=" " required>
+                        <label class="floating-label">Address</label>
+                    </div>
+                    <div class="input-progress" id="addressProgress"></div>
+                </div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="input-icon fa fa-map-marker"></i>
+                        <input type="text" id="location" placeholder=" " required>
+                        <label class="floating-label">Location</label>
+                    </div>
+                    <div class="input-progress" id="locationProgress"></div>
+                </div>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="input-icon fa fa-phone"></i>
+                        <input type="tel" id="phone" placeholder=" " required pattern="[0-9]*" inputmode="numeric">
+                        <label class="floating-label">Phone Number</label>
+                    </div>
+                    <div class="input-progress" id="phoneProgress"></div>
+                </div>
+                <button class="btn" id="addBtn" onclick="addEntry()">
+                    <span class="btn-text">Add Office Location</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDB_78efEwNs41DFSVRDvfjwFTYoJNTy5E",
+            authDomain: "office-locator-85eaf.firebaseapp.com",
+            projectId: "office-locator-85eaf",
+            storageBucket: "office-locator-85eaf.firebasestorage.app",
+            messagingSenderId: "592623246724",
+            appId: "1:592623246724:web:3a9543c0bda036affa91d1",
+            measurementId: "G-QZHJTKNBE9"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Form validation and progress tracking
+        function updateProgress() {
+            const name = document.getElementById("name").value.trim();
+            const address = document.getElementById("address").value.trim();
+            const location = document.getElementById("location").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            
+            let progress = 0;
+            let filledFields = 0;
+            
+            // Update individual field progress
+            if (name.length > 0) {
+                filledFields++;
+                document.getElementById("nameProgress").style.width = name.length >= 3 ? "100%" : "50%";
+            } else {
+                document.getElementById("nameProgress").style.width = "0%";
+            }
+            
+            if (address.length > 0) {
+                filledFields++;
+                document.getElementById("addressProgress").style.width = address.length >= 10 ? "100%" : "50%";
+            } else {
+                document.getElementById("addressProgress").style.width = "0%";
+            }
+            
+            if (location.length > 0) {
+                filledFields++;
+                document.getElementById("locationProgress").style.width = location.length >= 10 ? "100%" : "50%";
+            } else {
+                document.getElementById("locationProgress").style.width = "0%";
+            }
+            
+            if (phone.length > 0) {
+                filledFields++;
+                const isValidPhone = /^[0-9]+$/.test(phone) && phone.length >= 10 && phone.length <= 15;
+                document.getElementById("phoneProgress").style.width = isValidPhone ? "100%" : "50%";
+            } else {
+                document.getElementById("phoneProgress").style.width = "0%";
+            }
+            
+            // Update overall progress
+            progress = (filledFields / 4) * 100;
+            document.getElementById("progressBar").style.width = progress + "%";
+        }
+
+        function addEntry() {
+            const name = document.getElementById("name").value.trim();
+            const address = document.getElementById("address").value.trim();
+            const location = document.getElementById("location").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const addBtn = document.getElementById("addBtn");
+            
+            if (!name || !address || !location || !phone) {
+                // Shake animation for empty fields
+                if (!name) shakeInput("name");
+                if (!address) shakeInput("address");
+                if (!location) shakeInput("location");
+                if (!phone) shakeInput("phone");
+                
+                showErrorMessage("Please fill all fields: office name, address, location, and phone number.");
+                return;
+            }
+
+            // More robust phone number validation
+            if (!/^[0-9]+$/.test(phone) || phone.length < 10 || phone.length > 15) {
+                shakeInput("phone");
+                showErrorMessage("Please enter a valid phone number containing 10 to 15 digits.");
+                return;
+            }
+
+            // Show loading state
+            addBtn.classList.add("loading");
+            addBtn.disabled = true;
+
+            db.collection('offices').add({
+                name: name,
+                address: address,
+                location: location,
+                phone: phone,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // Success animation
+                addBtn.classList.remove("loading");
+                addBtn.classList.add("success");
+                addBtn.querySelector(".btn-text").textContent = "✓ Added Successfully!";
+                
+                // Clear form with animation
+                clearFormWithAnimation();
+                showSuccessMessage("Office location added successfully!");
+                
+                // Reset button after animation
+                setTimeout(() => {
+                    addBtn.disabled = false;
+                    addBtn.classList.remove("success");
+                    addBtn.querySelector(".btn-text").textContent = "Add Office Location";
+                }, 2000);
+                
+                // Redirect to main page after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+            })
+            .catch((error) => {
+                // Failure
+                console.error("Error adding entry:", error);
+                addBtn.classList.remove("loading");
+                addBtn.disabled = false;
+                showErrorMessage("Failed to add office location. Please try again.");
+            });
+        }
+
+        function shakeInput(inputId) {
+            const inputGroup = document.getElementById(inputId).closest(".input-group");
+            inputGroup.style.animation = "shake 0.5s ease-in-out";
+            setTimeout(() => {
+                inputGroup.style.animation = "";
+            }, 500);
+        }
+
+        function clearFormWithAnimation() {
+            const inputs = ["name", "address", "location", "phone"];
+            inputs.forEach((id, index) => {
+                setTimeout(() => {
+                    const input = document.getElementById(id);
+                    input.style.transform = "translateX(-100%)";
+                    input.style.opacity = "0";
+                    
+                    setTimeout(() => {
+                        input.value = "";
+                        input.style.transform = "translateX(0)";
+                        input.style.opacity = "1";
+                        updateProgress();
+                    }, 300);
+                }, index * 100);
+            });
+        }
+
+        function showSuccessMessage(message) {
+            const successDiv = document.createElement("div");
+            successDiv.className = "success-message";
+            successDiv.textContent = message;
+            
+            const content = document.querySelector(".content");
+            content.insertBefore(successDiv, content.firstChild);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        }
+
+        function showErrorMessage(message) {
+            const errorDiv = document.createElement("div");
+            errorDiv.className = "error-message";
+            errorDiv.textContent = message;
+            
+            const content = document.querySelector(".content");
+            content.insertBefore(errorDiv, content.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                addEntry();
+            }
+        });
+
+        // Mobile-specific fixes and form interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent zoom on input focus for iOS
+            const inputs = document.querySelectorAll('input[type="text"], input[type="tel"]');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.fontSize = '16px';
+                });
+                
+                // Add real-time validation and progress updates
+                input.addEventListener('input', updateProgress);
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+            });
+            
+            // Special handling for phone number input
+            const phoneInput = document.getElementById('phone');
+            
+            // Prevent non-numeric input
+            phoneInput.addEventListener('keypress', function(e) {
+                // Allow only numbers, backspace, delete, tab, escape, enter
+                if (!/[0-9]/.test(e.key) && 
+                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Remove any non-numeric characters on paste or input
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                
+                // Limit to 15 digits
+                if (value.length > 15) {
+                    value = value.slice(0, 15);
+                }
+                
+                e.target.value = value;
+                updateProgress();
+            });
+            
+            // Initialize progress
+            updateProgress();
+        });
+
+        function validateField(input) {
+            const value = input.value.trim();
+            const fieldId = input.id;
+            
+            // Remove existing validation icons
+            const existingIcon = input.parentNode.querySelector('.form-validation');
+            if (existingIcon) {
+                existingIcon.remove();
+            }
+            
+            // Create validation icon
+            const validationIcon = document.createElement('i');
+            validationIcon.className = 'form-validation fa';
+            
+            let isValid = false;
+            
+            switch(fieldId) {
+                case 'name':
+                    isValid = value.length >= 3;
+                    break;
+                case 'address':
+                    isValid = value.length >= 10;
+                    break;
+                case 'location':
+                    isValid = value.length >= 10;
+                    break;
+                case 'phone':
+                    isValid = /^[0-9]+$/.test(value) && value.length >= 10 && value.length <= 15;
+                    break;
+            }
+            
+            if (value.length > 0) {
+                if (isValid) {
+                    validationIcon.classList.add('fa-check-circle', 'valid');
+                } else {
+                    validationIcon.classList.add('fa-times-circle', 'invalid');
+                }
+                input.parentNode.appendChild(validationIcon);
+            }
+        }
+    </script>
+</body>
+</html> 

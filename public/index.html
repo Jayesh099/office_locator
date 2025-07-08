@@ -2,16 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Office Locator</title>
     
     <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Preload edit page for faster navigation -->
+    <link rel="prefetch" href="edit.html">
     
     <style>
         * {
@@ -22,21 +25,38 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
             color: #333;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 
+                        0 0 0 1px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
             overflow: hidden;
-            animation: slideIn 0.6s ease-out;
+            animation: slideIn 0.8s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         @keyframes slideIn {
@@ -51,22 +71,222 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #667eea 100%);
+            background-size: 400% 400%;
             color: white;
-            padding: 30px;
+            padding: 60px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: rotate 15s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 10;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            letter-spacing: -2px;
+            background: linear-gradient(45deg, #ffffff, #f0f0f0, #ffffff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header h1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            animation: shine 4s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(100%); }
         }
 
         .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            font-size: 1.3rem;
+            opacity: 0.95;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 0.95;
+                transform: translateY(0);
+            }
+        }
+
+        .header-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: floatShapes 20s linear infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: -2s;
+        }
+
+        .shape:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 60%;
+            left: 80%;
+            animation-delay: -8s;
+        }
+
+        .shape:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 80%;
+            left: 20%;
+            animation-delay: -15s;
+        }
+
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 70%;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatShapes {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.1;
+            }
+            50% {
+                transform: translateY(-30px) rotate(180deg);
+                opacity: 0.3;
+            }
+        }
+
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            animation: fadeInUp 1s ease-out 1s both;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .content {
@@ -74,18 +294,47 @@
         }
 
         .form-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #e9ecef;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 35px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 20px 20px 0 0;
         }
 
         .form-section h2 {
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .form-section h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
         }
 
         .input-group {
@@ -101,19 +350,29 @@
 
         input[type="text"] {
             width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            padding: 18px 24px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
         }
 
         input[type="text"]:focus {
             outline: none;
-            border-color: #4facfe;
-            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
-            transform: translateY(-2px);
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15),
+                        0 4px 12px rgba(102, 126, 234, 0.1);
+            transform: translateY(-3px);
+            background: #ffffff;
+        }
+
+        input[type="text"]:hover:not(:focus) {
+            border-color: #cbd5e0;
+            transform: translateY(-1px);
         }
         
         /* Fix for iOS Safari button styling */
@@ -121,88 +380,205 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Mobile-specific fixes */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        input, textarea, button {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
+            padding: 18px 36px;
+            border-radius: 14px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 50%, #ec4899 100%);
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn:active {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
         }
 
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.2);
         }
 
         .search-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #e9ecef;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 35px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            border-radius: 20px 20px 0 0;
         }
 
         .search-section h3 {
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .search-section h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 2px;
         }
 
         .entries-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid #e9ecef;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 35px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .entries-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #dc3545 0%, #fd7e14 100%);
+            border-radius: 20px 20px 0 0;
         }
 
         .entries-section h3 {
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .entries-section h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            border-radius: 2px;
         }
 
         .entry-link {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: white;
-            color: #495057;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            color: #2d3748;
             text-decoration: none;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 18px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .entry-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .entry-link:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            border-color: #4facfe;
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15),
+                        0 0 0 1px rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.2);
+            background: #ffffff;
+        }
+
+        .entry-link:hover::before {
+            transform: scaleX(1);
         }
 
         .entry-info {
@@ -211,17 +587,19 @@
         }
 
         .entry-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #343a40;
-            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
         }
 
         .entry-details span {
             display: block;
-            margin-bottom: 5px;
-            color: #6c757d;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
         .entry-details span:last-child {
@@ -229,10 +607,11 @@
         }
 
         .entry-details i {
-            margin-right: 8px;
-            color: #4facfe;
-            width: 15px;
+            margin-right: 12px;
+            color: #667eea;
+            width: 18px;
             text-align: center;
+            font-size: 1rem;
         }
 
         .detail-link {
@@ -255,19 +634,47 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 40px;
-            height: 40px;
-            background: #1877f2;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border-radius: 50%;
             text-decoration: none;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            font-size: 18px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .call-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .call-btn:hover {
-            background: #125db0;
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.5);
+        }
+
+        .call-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .call-btn:active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
         }
 
         .no-entries {
@@ -278,43 +685,51 @@
         }
 
         .success-message {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin: 25px 0;
             text-align: center;
-            font-weight: 500;
-            animation: slideIn 0.5s ease-out;
+            font-weight: 600;
+            font-size: 1.05rem;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .error-message {
-            background: linear-gradient(135deg, #dc3545, #c82333);
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin: 25px 0;
             text-align: center;
-            font-weight: 500;
-            animation: slideIn 0.5s ease-out;
+            font-weight: 600;
+            font-size: 1.05rem;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .loading {
             text-align: center;
-            color: #6c757d;
-            padding: 20px;
+            color: #4a5568;
+            padding: 30px;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
 
         .loading::after {
             content: '';
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4facfe;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-left: 10px;
+            margin-left: 12px;
         }
 
         @keyframes spin {
@@ -322,51 +737,97 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Pulse animation for loading states */
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Bounce animation for success messages */
+        .bounce-in {
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             body {
-                padding: 10px;
+                padding: 15px;
             }
             .container {
                 margin: 0;
-                border-radius: 15px;
+                border-radius: 20px;
+                max-width: 100%;
             }
             
             .content {
-                padding: 20px;
+                padding: 25px;
             }
             
             .header {
-                padding: 20px;
+                padding: 35px 25px;
                 position: relative;
             }
             
+            .header {
+                padding: 50px 25px;
+            }
+            
             .header h1 {
-                font-size: 2rem;
-                margin-bottom: 5px;
+                font-size: 2.5rem;
+                margin-bottom: 15px;
             }
             
             .header p {
-                font-size: 1rem;
+                font-size: 1.1rem;
+                margin-bottom: 25px;
             }
             
-            .auth-buttons {
-                position: absolute;
-                top: 15px;
-                right: 15px;
+            .header-stats {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
             }
             
-            .auth-btn {
-                padding: 8px 12px;
-                font-size: 14px;
+            .stat-item {
+                padding: 12px 18px;
+                min-width: 120px;
             }
+            
+
             
             .form-section, .search-section, .entries-section {
-                padding: 20px;
-                margin-bottom: 20px;
+                padding: 25px;
+                margin-bottom: 25px;
+                border-radius: 18px;
             }
             
             .form-section h2, .search-section h3, .entries-section h3 {
-                font-size: 1.2rem;
+                font-size: 1.3rem;
+                margin-bottom: 20px;
             }
             
             input[type="text"], .btn {
@@ -375,15 +836,21 @@
             }
             
             .entry-link {
-                padding: 15px;
-                margin: 10px 0;
+                padding: 20px;
+                margin: 15px 0;
                 flex-direction: column;
                 align-items: flex-start;
+                display: flex;
+                width: 100%;
+                box-sizing: border-box;
+                border-radius: 16px;
             }
             
             .entry-actions {
-                margin-top: 10px;
+                margin-top: 15px;
                 align-self: flex-end;
+                display: flex;
+                gap: 10px;
             }
             
             .delete-btn {
@@ -391,25 +858,85 @@
                 transform: scale(1);
                 position: static;
                 margin-left: 0;
-                margin-top: 5px;
+                margin-top: 0;
             }
         }
         
         @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
             .header h1 {
-                font-size: 1.5rem;
+                font-size: 2rem;
             }
             
             .header p {
-                font-size: 0.9rem;
+                font-size: 1rem;
+                margin-bottom: 20px;
+            }
+            
+            .header-stats {
+                gap: 12px;
+            }
+            
+            .stat-item {
+                padding: 10px 15px;
+                min-width: 100px;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .stat-label {
+                font-size: 0.8rem;
             }
             
             .content {
-                padding: 15px;
+                padding: 20px;
             }
             
             .form-section, .search-section, .entries-section {
-                padding: 15px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .entry-link {
+                padding: 18px;
+                margin: 12px 0;
+                border-radius: 14px;
+            }
+            
+            .entry-name {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .entry-details {
+                font-size: 0.9rem;
+            }
+            
+            .call-btn, .delete-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 16px;
+            }
+            
+            input[type="text"], .btn {
+                padding: 16px 20px;
+                font-size: 16px;
+            }
+            
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
             }
         }
 
@@ -422,98 +949,170 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .auth-buttons {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
 
-        .auth-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
 
-        .auth-btn:hover {
-            background: white;
-            color: #667eea;
-        }
-
-        #authIcon {
-            height: 24px;
-            width: 24px;
-            vertical-align: middle;
-            font-size: 24px; /* For Font Awesome */
-            color: white;
-        }
-
-        .delete-btn {
-            background: #ff4d4f;
+        .delete-btn, .edit-btn {
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             transform: scale(0.8);
-            margin-left: 10px;
+            margin-left: 12px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .entry-link:hover .delete-btn {
+        .delete-btn {
+            background: linear-gradient(135deg, #ff4d4f 0%, #dc3545 100%);
+            box-shadow: 0 6px 20px rgba(255, 77, 79, 0.3);
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            box-shadow: 0 6px 20px rgba(82, 196, 26, 0.3);
+        }
+
+        .delete-btn::before, .edit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .entry-link:hover .delete-btn, .entry-link:hover .edit-btn {
             opacity: 1;
             transform: scale(1);
         }
 
         .delete-btn:hover {
-            background: #d63234;
+            background: linear-gradient(135deg, #d63234 0%, #c82333 100%);
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(255, 77, 79, 0.5);
+        }
+
+        .edit-btn:hover {
+            background: linear-gradient(135deg, #389e0d 0%, #237804 100%);
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(82, 196, 26, 0.5);
+        }
+
+        .delete-btn:hover::before, .edit-btn:hover::before {
+            opacity: 1;
+        }
+
+        .delete-btn:active, .edit-btn:active {
+            transform: scale(1.05);
+        }
+
+        .delete-btn:active {
+            box-shadow: 0 6px 15px rgba(255, 77, 79, 0.4);
+        }
+
+        .edit-btn:active {
+            box-shadow: 0 6px 15px rgba(82, 196, 26, 0.4);
+        }
+
+        .edit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .edit-btn .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+        }
+
+        .fab:hover {
             transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 50%, #ec4899 100%);
+        }
+
+        .fab:active {
+            transform: scale(1.05);
+        }
+
+        .fab i {
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="auth-buttons">
-                <a href="#" id="authLink" class="auth-btn">
-                    <i id="authIcon" class="fa"></i>
-                </a>
+            <div class="header-decorations">
+                <div class="floating-shapes">
+                    <div class="shape"></div>
+                    <div class="shape"></div>
+                    <div class="shape"></div>
+                    <div class="shape"></div>
+                </div>
             </div>
-            <h1>📍 Office Locator</h1>
-            <p>Manage and locate your office addresses with ease</p>
+            <div class="header-content">
+                <h1>📍 Office Locator</h1>
+                <p>Manage and locate your office addresses with ease</p>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="officeCount">0</span>
+                        <span class="stat-label">Offices</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Reliable</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="content">
-            <div id="admin-controls" class="form-section" style="display: none;">
-                <h2>Add New Office Location</h2>
-                <div class="input-group">
-                    <label for="name">Office Name</label>
-                    <input type="text" id="name" placeholder="Enter office name (e.g., Main Office, Branch Office)">
-                </div>
-                <div class="input-group">
-                    <label for="address">Office Address</label>
-                    <input type="text" id="address" placeholder="Enter complete office address">
-                </div>
-                <div class="input-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="text" id="phone" placeholder="Enter phone number">
-                </div>
-                <button class="btn" id="addBtn" onclick="addEntry()">Add Office Location</button>
-            </div>
-
             <div class="search-section">
                 <h3>🔍 Search Offices</h3>
-                <input type="text" id="search" placeholder="Search by office name or address..." oninput="filterEntries()">
+                <input type="text" id="search" placeholder="Search by office name, address, or location..." oninput="filterEntries()">
             </div>
 
             <div class="entries-section">
@@ -524,6 +1123,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Action Button -->
+    <a href="add.html" class="fab" title="Add New Office">
+        <i class="fa fa-plus"></i>
+    </a>
 
     <script>
         // Firebase configuration - Replace with your actual config
@@ -540,87 +1144,12 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const auth = firebase.auth();
 
         let entries = [];
         let allEntries = [];
-        let currentUser = null;
 
-        // Auth state listener
-        auth.onAuthStateChanged(user => {
-            currentUser = user;
-            const adminControls = document.getElementById('admin-controls');
-            const authLink = document.getElementById('authLink');
-            const authIcon = document.getElementById('authIcon');
-            
-            if (user) {
-                // User is logged in
-                adminControls.style.display = 'block';
-                authLink.href = '#';
-                authIcon.className = 'fa fa-power-off';
-                authLink.onclick = () => auth.signOut();
-            } else {
-                // User is logged out
-                adminControls.style.display = 'none';
-                authLink.href = 'login.html';
-                authIcon.className = 'fa fa-sign-in';
-                authLink.onclick = null;
-            }
-            // Re-render entries to update UI based on auth state (e.g., show/hide delete buttons)
-            filterEntries();
-        });
 
         // The loadEntries function is no longer needed, onSnapshot will handle everything.
-
-        function addEntry() {
-            const name = document.getElementById("name").value.trim();
-            const address = document.getElementById("address").value.trim();
-            const phone = document.getElementById("phone").value.trim();
-            const addBtn = document.getElementById("addBtn");
-            
-            if (!name || !address || !phone) {
-                alert("Please fill all fields: office name, address, and phone number.");
-                return;
-            }
-
-            // More robust phone number validation
-            if (!/^[0-9]+$/.test(phone) || phone.length < 10 || phone.length > 15) {
-                alert("Please enter a valid phone number containing 10 to 15 digits.");
-                return;
-            }
-
-            // Disable button and show loading
-            addBtn.disabled = true;
-            addBtn.textContent = "Adding...";
-
-            db.collection('offices').add({
-                name: name,
-                address: address,
-                phone: phone,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                // Success
-                document.getElementById("name").value = "";
-                document.getElementById("address").value = "";
-                document.getElementById("phone").value = "";
-                document.getElementById("search").value = "";
-                showSuccessMessage("Office location added successfully!");
-                
-                // Re-enable button
-                addBtn.disabled = false;
-                addBtn.textContent = "Add Office Location";
-            })
-            .catch((error) => {
-                // Failure
-                console.error("Error adding entry:", error);
-                showErrorMessage("Failed to add office location. Please try again.");
-                
-                // Re-enable button
-                addBtn.disabled = false;
-                addBtn.textContent = "Add Office Location";
-            });
-        }
 
         function showSuccessMessage(message) {
             const successDiv = document.createElement("div");
@@ -652,6 +1181,12 @@
             let container = document.getElementById("entries");
             container.innerHTML = "";
             
+            // Update office count in header
+            const officeCount = document.getElementById("officeCount");
+            if (officeCount) {
+                officeCount.textContent = list.length;
+            }
+            
             if (list.length === 0) {
                 container.innerHTML = '<div class="no-entries">No office locations found. Add your first office location above!</div>';
                 return;
@@ -668,8 +1203,12 @@
                     <div class="entry-name">${entry.name}</div>
                     <div class="entry-details">
                         <span>
+                            <i class="fa fa-home"></i>
+                            <span class="detail-link">${entry.address || 'N/A'}</span>
+                        </span>
+                        <span>
                             <i class="fa fa-map-marker"></i>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.address)}" target="_blank" class="detail-link">${entry.address}</a>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.location || entry.address || '')}" target="_blank" class="detail-link">${entry.location || entry.address || 'N/A'}</a>
                         </span>
                         <span>
                             <i class="fa fa-phone"></i>
@@ -687,32 +1226,64 @@
                 callBtn.href = `tel:${entry.phone}`;
                 callBtn.title = 'Call Office';
                 callBtn.innerHTML = '<i class="fa fa-phone"></i>';
+                
+                // Simple call functionality - no popups
+                callBtn.addEventListener('click', function(e) {
+                    console.log('Call button clicked for:', entry.phone);
+                    // Let the tel: link handle the call directly without any popups
+                });
+                
                 actionsContainer.appendChild(callBtn);
 
-                if (currentUser) {
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
-                    deleteBtn.title = 'Delete';
-                    deleteBtn.onclick = (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        deleteEntry(entry.id, entry.name);
-                    };
-                    actionsContainer.appendChild(deleteBtn);
-                }
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-btn';
+                editBtn.innerHTML = '<i class="fa fa-edit"></i>';
+                editBtn.title = 'Edit Office';
+                editBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    editEntry(entry);
+                };
+                actionsContainer.appendChild(editBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                deleteBtn.title = 'Delete';
+                deleteBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    deleteEntry(entry.id, entry.name);
+                };
+                actionsContainer.appendChild(deleteBtn);
 
                 entryCard.appendChild(actionsContainer);
                 container.appendChild(entryCard);
             });
         }
 
-        async function deleteEntry(id, name) {
-            if (!currentUser) {
-                showErrorMessage("You must be logged in to delete entries.");
-                return;
+        function editEntry(entry) {
+            // Show loading state immediately
+            const editBtn = event.target.closest('.edit-btn');
+            const originalContent = editBtn.innerHTML;
+            editBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+            editBtn.disabled = true;
+            
+            try {
+                // Navigate to edit page with URL parameters
+                const editUrl = `edit.html?id=${encodeURIComponent(entry.id)}&name=${encodeURIComponent(entry.name)}&address=${encodeURIComponent(entry.address || '')}&location=${encodeURIComponent(entry.location || entry.address || '')}&phone=${encodeURIComponent(entry.phone)}`;
+                window.location.href = editUrl;
+            } catch (error) {
+                console.error('Error navigating to edit page:', error);
+                editBtn.innerHTML = originalContent;
+                editBtn.disabled = false;
+                showErrorMessage('Failed to open edit page. Please try again.');
             }
+        }
+        
 
+
+        async function deleteEntry(id, name) {
             if (confirm(`Are you sure you want to delete the office "${name}"?`)) {
                 try {
                     await db.collection('offices').doc(id).delete();
@@ -732,47 +1303,120 @@
             } else {
                 entries = allEntries.filter(entry =>
                     entry.name.toLowerCase().includes(query) || 
-                    entry.address.toLowerCase().includes(query) ||
+                    (entry.address && entry.address.toLowerCase().includes(query)) ||
+                    (entry.location && entry.location.toLowerCase().includes(query)) ||
                     (entry.phone && entry.phone.toLowerCase().includes(query))
                 );
             }
             displayEntries(entries);
         }
 
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                addEntry();
-            }
-        });
+        // Add keyboard shortcuts - removed add entry shortcut since it's on separate page
 
-        // Real-time updates with onSnapshot
-        db.collection('offices')
-            .orderBy('timestamp', 'desc')
-            .onSnapshot((snapshot) => {
-                allEntries = [];
-                snapshot.forEach(doc => {
-                    allEntries.push({
-                        id: doc.id,
-                        ...doc.data()
+        // Initialize Firebase and load data
+        function initializeApp() {
+            console.log('Initializing Firebase app...');
+            
+            // Check if Firebase is properly initialized
+            if (!firebase.apps.length) {
+                console.error('Firebase not initialized');
+                document.getElementById('entries').innerHTML = '<div class="no-entries" style="color: #dc3545;">Firebase connection failed. Please refresh the page.</div>';
+                return;
+            }
+            
+            console.log('Firebase initialized successfully');
+            
+            // Load offices data with better error handling
+            loadOfficesData();
+        }
+        
+        function loadOfficesData() {
+            console.log('Loading offices data...');
+            
+            // Try to get data first with get() method as fallback
+            db.collection('offices')
+                .orderBy('timestamp', 'desc')
+                .get()
+                .then((snapshot) => {
+                    console.log('Got snapshot with', snapshot.size, 'documents');
+                    allEntries = [];
+                    snapshot.forEach(doc => {
+                        allEntries.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
                     });
+                    
+                    filterEntries();
+                    
+                    // Now set up real-time listener
+                    setupRealtimeListener();
+                })
+                .catch((error) => {
+                    console.error("Error loading offices:", error);
+                    const entriesContainer = document.getElementById("entries");
+                    entriesContainer.innerHTML = `
+                        <div class="no-entries" style="color: #dc3545; text-align: center; padding: 20px;">
+                            <strong>⚠️ Database Error</strong><br>
+                            Could not load office locations.<br>
+                            Error: ${error.message}<br>
+                            <button onclick="window.location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                Refresh Page
+                            </button>
+                        </div>`;
                 });
-                
-                // After updating allEntries, apply current search filter
-                filterEntries();
-            }, (error) => {
-                 console.error("Error with real-time listener:", error);
-                 const entriesContainer = document.getElementById("entries");
-                 entriesContainer.innerHTML = `
-                    <div class="no-entries" style="color: #dc3545; text-align: center; padding: 20px;">
-                        <strong>⚠️ Connection Error</strong><br>
-                        Could not load office locations.<br>
-                        Please check your internet connection and try refreshing the page.<br>
-                        <button onclick="window.location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            Refresh Page
-                        </button>
-                    </div>`;
-            });
+        }
+        
+        function setupRealtimeListener() {
+            console.log('Setting up real-time listener...');
+            
+            // Real-time updates with onSnapshot
+            db.collection('offices')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot((snapshot) => {
+                    console.log('Real-time update received');
+                    allEntries = [];
+                    snapshot.forEach(doc => {
+                        allEntries.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    
+                    filterEntries();
+                }, (error) => {
+                     console.error("Error with real-time listener:", error);
+                     // Don't override the UI if we already have data
+                     if (allEntries.length === 0) {
+                         const entriesContainer = document.getElementById("entries");
+                         entriesContainer.innerHTML = `
+                            <div class="no-entries" style="color: #dc3545; text-align: center; padding: 20px;">
+                                <strong>⚠️ Connection Error</strong><br>
+                                Could not load office locations.<br>
+                                Please check your internet connection and try refreshing the page.<br>
+                                <button onclick="window.location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                    Refresh Page
+                                </button>
+                            </div>`;
+                     }
+                });
+        }
+        
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing app...');
+            
+            // Check for update errors from edit page
+            const updateError = localStorage.getItem('updateError');
+            if (updateError) {
+                setTimeout(() => {
+                    showErrorMessage(updateError);
+                    localStorage.removeItem('updateError');
+                }, 1000);
+            }
+            
+            setTimeout(initializeApp, 1000); // Give Firebase time to initialize
+        });
             
         // Add online/offline detection
         window.addEventListener('online', () => {
@@ -781,6 +1425,48 @@
         
         window.addEventListener('offline', () => {
             showErrorMessage('You are offline. Some features may not work properly. 📶');
+        });
+        
+        // Interactive mouse effects
+        document.addEventListener('mousemove', function(e) {
+            const header = document.querySelector('.header');
+            if (header) {
+                const rect = header.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const deltaX = (x - centerX) / centerX;
+                    const deltaY = (y - centerY) / centerY;
+                    
+                    const shapes = header.querySelectorAll('.shape');
+                    shapes.forEach((shape, index) => {
+                        const factor = (index + 1) * 0.5;
+                        shape.style.transform = `translate(${deltaX * factor * 10}px, ${deltaY * factor * 10}px)`;
+                    });
+                }
+            }
+        });
+
+        // Mobile-specific fixes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fix for mobile form submission
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                });
+            });
+            
+            // Prevent zoom on input focus for iOS
+            const inputs = document.querySelectorAll('input[type="text"]');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.fontSize = '16px';
+                });
+            });
         });
     </script>
 </body>
