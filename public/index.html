@@ -1151,6 +1151,136 @@
 
         // The loadEntries function is no longer needed, onSnapshot will handle everything.
 
+        function showPhoneSelectionModal(phone1, phone2, officeName) {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease-out;
+            `;
+            
+            // Create modal content
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: white;
+                border-radius: 20px;
+                padding: 30px;
+                max-width: 350px;
+                width: 90%;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                animation: slideIn 0.4s ease-out;
+            `;
+            
+            modal.innerHTML = `
+                <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.4rem;">📞 Call ${officeName}</h3>
+                <p style="margin: 0 0 25px 0; color: #666;">Choose a phone number to call:</p>
+                <button class="phone-option-btn" data-phone="${phone1}" style="
+                    display: block;
+                    width: 100%;
+                    padding: 15px;
+                    margin: 10px 0;
+                    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    📱 ${phone1}
+                </button>
+                <button class="phone-option-btn" data-phone="${phone2}" style="
+                    display: block;
+                    width: 100%;
+                    padding: 15px;
+                    margin: 10px 0;
+                    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    📞 ${phone2}
+                </button>
+                <button class="cancel-btn" style="
+                    display: block;
+                    width: 100%;
+                    padding: 12px;
+                    margin: 15px 0 0 0;
+                    background: #f8f9fa;
+                    color: #6c757d;
+                    border: 1px solid #dee2e6;
+                    border-radius: 12px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    Cancel
+                </button>
+            `;
+            
+            // Add event listeners
+            modal.querySelectorAll('.phone-option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const phoneNumber = this.dataset.phone;
+                    window.location.href = `tel:${phoneNumber}`;
+                    document.body.removeChild(overlay);
+                });
+                
+                btn.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+            
+            modal.querySelector('.cancel-btn').addEventListener('click', function() {
+                document.body.removeChild(overlay);
+            });
+            
+            // Close on overlay click
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                }
+            });
+            
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            
+            // Add CSS animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         function showSuccessMessage(message) {
             const successDiv = document.createElement("div");
             successDiv.className = "success-message";
@@ -1203,20 +1333,20 @@
                     <div class="entry-name">${entry.name}</div>
                     <div class="entry-details">
                         <span>
-                            <span class="detail-link">${entry.address || 'N/A'}</span>
                             <i class="fa fa-home"></i>
+                            <span class="detail-link">${entry.address || 'N/A'}</span>
                         </span>
                         <span>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.location || entry.address || '')}" target="_blank" class="detail-link">${entry.location || entry.address || 'N/A'}</a>
                             <i class="fa fa-map-marker"></i>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entry.location || entry.address || '')}" target="_blank" class="detail-link">${entry.location || entry.address || 'N/A'}</a>
                         </span>
                         <span>
-                            <a href="tel:${entry.phone}" class="detail-link">${entry.phone}</a>
                             <i class="fa fa-phone"></i>
+                            <a href="tel:${entry.phone}" class="detail-link">${entry.phone}</a>
                         </span>
                         ${entry.phone2 ? `<span>
-                            <a href="tel:${entry.phone2}" class="detail-link">${entry.phone2}</a>
                             <i class="fa fa-phone"></i>
+                            <a href="tel:${entry.phone2}" class="detail-link">${entry.phone2}</a>
                         </span>` : ''}
                     </div>
                 `;
@@ -1225,16 +1355,23 @@
                 const actionsContainer = document.createElement('div');
                 actionsContainer.className = 'entry-actions';
 
-                const callBtn = document.createElement('a');
+                const callBtn = document.createElement('button');
                 callBtn.className = 'call-btn';
-                callBtn.href = `tel:${entry.phone}`;
-                callBtn.title = 'Call Office';
+                callBtn.title = entry.phone2 ? 'Call Office (Multiple Numbers)' : 'Call Office';
                 callBtn.innerHTML = '<i class="fa fa-phone"></i>';
                 
-                // Simple call functionality - no popups
+                // Enhanced call functionality to handle multiple numbers
                 callBtn.addEventListener('click', function(e) {
-                    console.log('Call button clicked for:', entry.phone);
-                    // Let the tel: link handle the call directly without any popups
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (entry.phone2) {
+                        // Create a better phone selection modal
+                        showPhoneSelectionModal(entry.phone, entry.phone2, entry.name);
+                    } else {
+                        // Only one number, call directly
+                        window.location.href = `tel:${entry.phone}`;
+                    }
                 });
                 
                 actionsContainer.appendChild(callBtn);
